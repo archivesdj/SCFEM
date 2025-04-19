@@ -1,0 +1,4 @@
+conductor 1.0
+dirichlet_0 0.0
+dirichlet_1 1.0
+neumann_0 0.0 

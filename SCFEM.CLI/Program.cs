@@ -9,41 +9,39 @@ namespace SCFEM.CLI
     {
         static void Main(string[] args)
         {
-            if (args.Length < 2)
+            if (args.Length != 2)
             {
-                Console.WriteLine("Usage: SCFEM.CLI <mesh_file> <material_properties_file>");
+                Console.WriteLine("Usage: SCFEM.CLI <mesh_file> <materials_file>");
                 return;
             }
 
             string meshFile = args[0];
-            string materialFile = args[1];
+            string materialsFile = args[1];
 
             if (!File.Exists(meshFile))
             {
-                Console.WriteLine($"Error: Mesh file {meshFile} does not exist.");
+                Console.WriteLine($"Mesh file not found: {meshFile}");
                 return;
             }
 
-            if (!File.Exists(materialFile))
+            if (!File.Exists(materialsFile))
             {
-                Console.WriteLine($"Error: Material properties file {materialFile} does not exist.");
+                Console.WriteLine($"Materials file not found: {materialsFile}");
                 return;
             }
 
             try
             {
-                var mesh = new Mesh();
-                mesh.LoadFromGmsh(meshFile);
-                mesh.MaterialProperties = MaterialProperties.LoadFromFile(materialFile);
+                var parser = new GmshParser();
+                var mesh = parser.Parse(meshFile);
+                mesh.LoadMaterialProperties(materialsFile);
 
                 var solver = new StationaryCurrentSolver(mesh);
-                solver.AssembleSystem();
-                solver.ApplyBoundaryConditions();
                 solver.Solve();
 
                 string outputFile = Path.ChangeExtension(meshFile, ".vtk");
-                solver.ExportToVTK(outputFile);
-                Console.WriteLine($"Solution exported to {outputFile}");
+                solver.SaveSolution(outputFile);
+                Console.WriteLine($"Solution saved to {outputFile}");
             }
             catch (Exception ex)
             {
